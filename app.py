@@ -12,12 +12,26 @@ relay = GroveRelay(66)
 id = '9e9e2074-64b1-4dd2-8ee3-ad2ab0359a77'
 client_name = id + 'soil_moisture_sensor_client'
 client_telemetry_topic = id + '/telemetry'
-
+server_command_topic = id + '/command'
 
 mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_name)
 mqtt_client.connect('test.mosquitto.org')
 mqtt_client.loop_start()
 print("MQTT connected!")
+
+def handle_command(client, userdata, message):
+    payload = json.loads(message.payload.decode())
+    print("Command received:", payload)
+
+    if payload.get('relay_on'):
+        print("Turning relay ON")
+        relay.on()
+    else:
+        print("Turning relay OFF")
+        relay.off()
+
+mqtt_client.subscribe(server_command_topic)
+mqtt_client.on_message = handle_command
 
 while True:
     soil_moisture = adc.read(65)
@@ -26,9 +40,3 @@ while True:
     print("Sending telemetry:", telemetry)
     mqtt_client.publish(client_telemetry_topic, telemetry)
     time.sleep(10)
-    if soil_moisture > 486:
-        print("Soil Moisture is too low, turning relay on.")
-        relay.on()
-    else:
-        print("Soil Moisture is ok, turning relay off.")
-        relay.off()
