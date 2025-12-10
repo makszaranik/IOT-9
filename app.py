@@ -4,10 +4,13 @@ from counterfit_shims_grove.adc import ADC
 from counterfit_shims_grove.grove_relay import GroveRelay
 import json
 from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse
+from azure.iot.device import IoTHubDeviceClient, Message, MethodResponse, X509
 
-connection_string = "HostName=soil-moisture-sensor-max11189.azure-devices.net;DeviceId=soil-moisture-sensor;SharedAccessKey=+6A1CAZkhiAl3cxC90KNZWPoAy2znZN1z0SOqJ+0dbw="
+host_name = "soil-moisture-sensor-max11189.azure-devices.net"
+x509 = X509("./soil-moisture-sensor-x509-cert.pem", "./soil-moisture-sensor-x509-key.pem")
+device_id = "soil-moisture-sensor-x509"
 
-device_client = IoTHubDeviceClient.create_from_connection_string(connection_string)
+device_client = IoTHubDeviceClient.create_from_x509_certificate(x509, host_name, device_id)
 print('Connecting')
 device_client.connect()
 print('Connected')
